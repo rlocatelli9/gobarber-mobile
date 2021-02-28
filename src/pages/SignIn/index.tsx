@@ -9,6 +9,8 @@ import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
 import getValidationErrors from '../../utils/getValidationErrors';
 
+import { useAuth } from '../../context/AuthContext';
+
 import LogoImage from '../../assets/logo.png';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
@@ -32,6 +34,8 @@ const SignIn = () => {
   const formRef = useRef<FormHandles>(null);
   const passwordInputRef = useRef<TextInput>(null);
 
+  const { signIn } = useAuth();
+
   const handleSubmit = useCallback(
     async (data: SignInFormData) => {
       try {
@@ -47,10 +51,10 @@ const SignIn = () => {
           abortEarly: false,
         });
 
-        // await signIn({
-        //   email: data.email,
-        //   password: data.password,
-        // });
+        await signIn({
+          email: data.email,
+          password: data.password,
+        });
 
         // history.push('/dashboard');
       } catch (error) {
@@ -66,7 +70,7 @@ const SignIn = () => {
           'Erro ao fazer login. Verifique as credenciais.',
         );
       }
-    }, []
+    }, [signIn]
   );
 
   return (
