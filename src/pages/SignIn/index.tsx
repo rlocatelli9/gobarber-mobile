@@ -1,6 +1,6 @@
 import React, { useCallback, useRef } from 'react';
 import {
-  Image, KeyboardAvoidingView, ScrollView, Platform, View, TextInput, Alert
+  Image, KeyboardAvoidingView, ScrollView, Platform, View, TextInput, Alert, StatusBar
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
@@ -30,6 +30,8 @@ interface SignInFormData {
 }
 
 const SignIn = () => {
+  StatusBar.setBackgroundColor('#312e38');
+
   const navigation = useNavigation();
   const formRef = useRef<FormHandles>(null);
   const passwordInputRef = useRef<TextInput>(null);
