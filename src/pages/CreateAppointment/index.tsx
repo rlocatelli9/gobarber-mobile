@@ -1,6 +1,7 @@
 import { useNavigation, useRoute } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Platform, StatusBar, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -15,7 +16,11 @@ import {
   ProvidersList,
   ProviderContainer,
   ProviderAvatar,
-  ProviderName
+  ProviderName,
+  Calendar,
+  CalendarTitle,
+  OpenDatePickerButton,
+  OpenDatePickerText
 } from './styles';
 
 interface RouteParams{
@@ -38,6 +43,8 @@ const CreateAppointment: React.FC = () => {
 
   const [providers, setProvider] = useState<Provider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState(routeParams.providerId);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     api.get('/providers').then((response) => {
@@ -52,6 +59,20 @@ const CreateAppointment: React.FC = () => {
   const handleSelectProvider = useCallback((providerId: string) => {
     setSelectedProvider(providerId);
   }, [setSelectedProvider]);
+
+  const handleToggleDatePicker = useCallback(() => {
+    setShowDatePicker((oldState) => !oldState);
+  }, [setShowDatePicker]);
+
+  const handleDateChange = useCallback((event: any, date: Date | undefined) => {
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+
+    if (date) {
+      setSelectedDate(date);
+    }
+  }, []);
 
   return (
     <Container>
@@ -85,6 +106,27 @@ const CreateAppointment: React.FC = () => {
           )}
         />
       </ProvidersListContainer>
+      <Calendar>
+
+        <CalendarTitle>Escolha a data</CalendarTitle>
+
+        <OpenDatePickerButton onPress={handleToggleDatePicker}>
+          <OpenDatePickerText>Selecionar outra data</OpenDatePickerText>
+        </OpenDatePickerButton>
+
+        {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display="calendar"
+          textColor="#f4ede8"
+          onChange={handleDateChange}
+        />
+        )}
+      </Calendar>
+
+      <Text>{`${selectedDate}`}</Text>
+
     </Container>
   );
 };
