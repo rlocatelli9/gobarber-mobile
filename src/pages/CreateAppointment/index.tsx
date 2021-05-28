@@ -3,7 +3,7 @@ import React, {
   useCallback, useEffect, useMemo, useState
 } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Platform, StatusBar } from 'react-native';
+import { Alert, Platform, StatusBar } from 'react-native';
 import { format } from 'date-fns';
 import Icon from 'react-native-vector-icons/Feather';
 import { useAuth } from '../../context/AuthContext';
@@ -32,7 +32,10 @@ import {
   SectionTitle,
   Hour,
   HourText,
+  CreateAppointmentButton,
+  CreateAppointmentText
 } from './styles';
+import getValidationErrors from '../../utils/getValidationErrors';
 
 interface DayAvailabilityItem {
   hour: number;
@@ -57,7 +60,7 @@ StatusBar.setBackgroundColor('#28262e');
 const CreateAppointment: React.FC = () => {
   const { user } = useAuth();
   const route = useRoute();
-  const { goBack } = useNavigation();
+  const { goBack, navigate } = useNavigation();
   const routeParams = route.params as RouteParams;
 
   const [providers, setProvider] = useState<Provider[]>([]);
@@ -107,6 +110,26 @@ const CreateAppointment: React.FC = () => {
       setSelectedDate(date);
     }
   }, []);
+
+  const handleCreateAppointment = useCallback(async () => {
+    try {
+      const date = new Date(selectedDate);
+      date.setHours(selectedHour);
+      date.setMinutes(0);
+
+      await api.post('appointments', {
+        providerId: selectedProvider,
+        date,
+      });
+
+      navigate('AppointmentCreated', { date: date.getTime() });
+    } catch (error) {
+      Alert.alert(
+        'Erro no Agendamento!',
+        'Erro ao fazer o agendamento. Verifique os horários e tente novamente!',
+      );
+    }
+  }, [navigate, selectedDate, selectedHour, selectedProvider]);
 
   const handleSelectHour = useCallback((hour: number) => {
     setSelectedHour(hour);
@@ -219,6 +242,10 @@ const CreateAppointment: React.FC = () => {
             </SectionContent>
           </Section>
         </CustomSchedule>
+
+        <CreateAppointmentButton onPress={handleCreateAppointment}>
+          <CreateAppointmentText>Agendar</CreateAppointmentText>
+        </CreateAppointmentButton>
       </Content>
 
     </Container>
