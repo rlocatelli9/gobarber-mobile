@@ -31,7 +31,9 @@ import { useAuth } from '../../context/AuthContext';
 interface ProfileFormData {
   name: string;
   email: string;
-  password: string;
+  oldPassword: string;
+  newPassword: string;
+  passwordConfirmation: string;
 }
 
 const Profile = () => {
@@ -41,7 +43,7 @@ const Profile = () => {
   const confirmationPasswordInputRef = useRef<TextInput>(null);
   const emailInputRef = useRef<TextInput>(null);
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const handleSubmit = useCallback(
     async (data: ProfileFormData) => {
@@ -52,18 +54,57 @@ const Profile = () => {
           email: Yup.string()
             .required('E-mail obrigatório')
             .email('Digite um e-mail válido'),
-          password: Yup.string().min(6, 'No mínimo 6 dígitos'),
+          oldPassword: Yup.string(),
+          newPassword: Yup.string().when('oldPassword', {
+            is: (oldPassword: string) => !!oldPassword.length,
+            then: Yup.string()
+              .required('A senha é obrigatória')
+              .min(6, 'No mínimo 6 dígitos'),
+            otherwise: Yup.string(),
+          }),
+          passwordConfirmation: Yup.string()
+            .when('oldPassword', {
+              is: (oldPassword: string) => !!oldPassword.length,
+              then: Yup.string()
+                .required('A senha é obrigatória')
+                .min(6, 'No mínimo 6 dígitos'),
+              otherwise: Yup.string(),
+            })
+            .oneOf(
+              [Yup.ref('newPassword', undefined)],
+              'Confirmação incorreta',
+            ),
         });
 
         await schema.validate(data, {
           abortEarly: false,
         });
 
-        const response = await api.post('users', data);
+        const {
+          name,
+          email,
+          oldPassword,
+          newPassword,
+          passwordConfirmation,
+        } = data;
+
+        const formData = {
+          name,
+          email,
+          ...(oldPassword && {
+            oldPassword,
+            newPassword,
+            passwordConfirmation,
+          }),
+        };
+
+        const response = await api.put('/profile', formData);
+
+        await updateUser(response.data);
 
         Alert.alert(
-          'Cadastro com sucesso!',
-          'Você já pode fazer login na aplicação',
+          'Atualizado com sucesso!',
+          'Suas informações do perfil foram atualizadas com sucesso!',
         );
 
         navigation.goBack();
@@ -81,7 +122,7 @@ const Profile = () => {
         );
       }
     },
-    [navigation],
+    [navigation, updateUser],
   );
 
   const handleGoBack = useCallback(() => {
@@ -111,7 +152,7 @@ const Profile = () => {
               <Title style={{ textAlign: 'left' }}>Meu Perfil</Title>
             </CustomTitle>
 
-            <Form onSubmit={handleSubmit} ref={formRef} style={{ width: '100%' }}>
+            <Form initialData={user} onSubmit={handleSubmit} ref={formRef} style={{ width: '100%' }}>
               <Input
                 name="name"
                 icon="user"
