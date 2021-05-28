@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControlBase, StatusBar } from 'react-native';
+import { StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
 import { useAuth } from '../../context/AuthContext';
@@ -33,7 +33,7 @@ StatusBar.setBackgroundColor('#28262e');
 
 const Dashboard: React.FC = () => {
   const [providers, setProvider] = useState<Provider[]>([]);
-  const { signOut, user } = useAuth();
+  const { user } = useAuth();
   const { navigate } = useNavigation();
 
   useEffect(() => {
@@ -43,9 +43,8 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const navigateProfile = useCallback(() => {
-    // navigate('Profile');
-    signOut();
-  }, [signOut]);
+    navigate('Profile');
+  }, [navigate]);
 
   const navigateToCreateAppointment = useCallback((providerId: string) => {
     navigate('CreateAppointment', { providerId });
