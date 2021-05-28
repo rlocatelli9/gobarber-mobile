@@ -43,6 +43,7 @@
       }
     ],
     "import/no-cycle": "off",
+    "import/no-duplicates": "off",
     "import/extensions": [
       "error",
       "ignorePackages",

@@ -26,6 +26,7 @@ interface AuthContextProps {
   loading: boolean;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
+  updateUser(user: User): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
@@ -75,6 +76,17 @@ export const AuthProvider: React.FC = ({ children }) => {
     setData({ token, user });
   }, []);
 
+  const updateUser = useCallback(
+    async (user: User) => {
+      await AsyncStorage.setItem('@GoBarber:user', JSON.stringify(user));
+      setData({
+        token: data.token,
+        user,
+      });
+    },
+    [data.token, setData],
+  );
+
   const signOut = useCallback(async () => {
     await AsyncStorage.multiRemove([
       '@GoBarber:token',
@@ -86,7 +98,7 @@ export const AuthProvider: React.FC = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{
-      user: data.user, signIn, loading, signOut
+      user: data.user, signIn, loading, signOut, updateUser
     }}
     >
       {children}
